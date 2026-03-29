@@ -1,0 +1,29 @@
+{
+    "name": "HydroBalance Pro",
+    "short_name": "HydroBalance",
+    "description": "Sistema de Balanço Hídrico Mineral — ICMM 2021 · GT10/IBRAM",
+    "start_url": "./",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#050e1a",
+    "theme_color": "#050e1a",
+    "icons": [
+        {
+            "src": "./icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "business",
+        "productivity"
+    ],
+    "lang": "pt-BR"
+}

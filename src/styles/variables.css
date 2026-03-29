@@ -1,0 +1,50 @@
+/* ── DESIGN SYSTEM ─────────────────────────────────────── */
+:root {
+  --c0: #050e1a;
+  --c1: #0b1f38;
+  --c2: #103060;
+  --c3: #1b4f9e;
+  --c4: #3278d4;
+  --c5: #5ba3f5;
+  --c6: #a8d0ff;
+  --c7: #ddeeff;
+
+  --g1: #0d5c2e;
+  --g2: #18a158;
+  --g3: #c8f5de;
+
+  --r1: #8b1a10;
+  --r2: #d63b2b;
+  --r3: #fde0dc;
+
+  --a1: #7a4500;
+  --a2: #e07b1a;
+  --a3: #fef0d8;
+
+  --p1: #4a1a7a;
+  --p2: #8b4dcc;
+  --p3: #f0e2ff;
+
+  --sand: #f4f1ec;
+  --stone: #e2ddd5;
+  --warm: #ccc8c0;
+  --ink: #12100e;
+  --muted: #6b6560;
+  --white: #ffffff;
+
+  --radius: 10px;
+  --shadow-sm: 0 1px 4px rgba(5,14,26,.08);
+  --shadow: 0 3px 16px rgba(5,14,26,.11);
+  --shadow-lg: 0 8px 40px rgba(5,14,26,.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--sand);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+}

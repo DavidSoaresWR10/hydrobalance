@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>HydroBalance Pro — Balanço Hídrico Mineral</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#050e1a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HydroBalance">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ══ HEADER ══════════════════════════════════════════════ -->
+  <header class="app-header">
+    <button class="hamburger" id="btn-hamburger" aria-label="Menu">☰</button>
+    <a class="brand" href="#">
+      <div class="brand-icon">💧</div>
+      <div>
+        <div class="brand-name">HydroBalance</div>
+        <span class="brand-tag">Pro · ICMM 2021 · GT10</span>
+      </div>
+    </a>
+    <div class="save-indicator" id="save-ind">
+      <span class="dot"></span>
+      <span id="save-txt">—</span>
+    </div>
+    <div class="header-spacer"></div>
+    <div class="export-group">
+      <button class="hbtn" id="btn-clear" title="Limpar todos os dados">🗑 <span>Limpar</span></button>
+      <button class="hbtn" id="btn-excel" title="Exportar planilha Excel">📊 <span>Excel</span></button>
+      <button class="hbtn" id="btn-pdf" title="Exportar PDF">📄 <span>PDF</span></button>
+      <button class="hbtn primary" id="btn-report" title="Ver relatório consolidado">📋 <span>Relatório</span></button>
+    </div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ══ TABS ════════════════════════════════════════════════ -->
+  <nav class="nav-tabs" id="nav-tabs">
+    <button class="ntab on" data-tab="0"><span class="nbadge">1</span> Perfil</button>
+    <button class="ntab" data-tab="1"><span class="nbadge">2</span> Captação</button>
+    <button class="ntab" data-tab="2"><span class="nbadge">3</span> OAG</button>
+    <button class="ntab" data-tab="3"><span class="nbadge">4</span> Precipitação</button>
+    <button class="ntab" data-tab="4"><span class="nbadge">5</span> Descarga</button>
+    <button class="ntab" data-tab="5"><span class="nbadge">6</span> Consumo & Reciclo</button>
+    <button class="ntab" data-tab="6"><span class="nbadge">7</span> Diagrama</button>
+    <button class="ntab" data-tab="7"><span class="nbadge">8</span> Relatório & IA</button>
+  </nav>
+
+  <!-- ══ WORKSPACE ═══════════════════════════════════════════ -->
+  <div class="workspace">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-label">Totais em Tempo Real</div>
+      <div class="mcard mc-blue">
+        <div class="ml">Captação Op. + OAG</div>
+        <div class="mv" id="sb-cap">0,0</div>
+        <div class="mu">ML/ano total entrada</div>
+      </div>
+      <div class="mcard mc-red">
+        <div class="ml">Descarga Total</div>
+        <div class="mv" id="sb-desc">0,0</div>
+        <div class="mu">ML/ano</div>
+      </div>
+      <div class="mcard mc-amber">
+        <div class="ml">Consumo Derivado</div>
+        <div class="mv" id="sb-cons">0,0</div>
+        <div class="mu">ML/ano</div>
+      </div>
+      <div class="mcard mc-green">
+        <div class="ml">Reciclo Interno</div>
+        <div class="mv" id="sb-rec">0,0</div>
+        <div class="mu">ML/ano</div>
+      </div>
+      <div class="mcard mc-purple">
+        <div class="ml">ΔS Estoque</div>
+        <div class="mv" id="sb-ds">0,0</div>
+        <div class="mu">ML/ano ± variação</div>
+      </div>
+      <div class="mcard mc-hero">
+        <div class="ml">Taxa de Reciclo</div>
+        <div class="mv" id="sb-taxa">—</div>
+        <div class="mu">% do volume processado</div>
+      </div>
+
+      <div class="sb-label">Consistência</div>
+      <div id="status-pill" class="status-pill sp-idle">
+        <span class="sp-icon">⚡</span>
+        <div class="sp-txt"><strong>Aguardando</strong>Preencha os campos</div>
+      </div>
+
+      <div class="sb-label" style="margin-top:auto">Progresso</div>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.35);line-height:2">
+        Captação Op.: <span id="prog-cap" style="color:var(--c5)">0 ML</span><br>
+        OAG: <span id="prog-oag" style="color:var(--a2)">0 ML</span><br>
+        Precipit.: <span id="prog-prec" style="color:#80c0ff">0 ML</span><br>
+        ROM: <span id="prog-rom" style="color:#b0d0ff">0 ML</span>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <!-- ── TAB 0: PERFIL ─────────────────────────────────── -->
+      <div class="panel on" id="p0">
+        <div class="sec-hd">
+          <h2>Perfil da Operação</h2><span class="sec-ref">ICMM §2.2 · GT10 Perfil</span>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🏭</span> Identificação <span class="card-badge">OBRIGATÓRIO</span>
+          </div>
+          <div class="grid-3">
+            <div class="field"><label>Nome da Operação</label><input class="inp" type="text" id="p-nome"
+                placeholder="Ex.: Mina Cauê"></div>
+            <div class="field"><label>Empresa</label><input class="inp" type="text" id="p-emp"
+                placeholder="Razão social"></div>
+            <div class="field"><label>Ano de Referência</label><input class="inp" type="number" id="p-ano" value="2025">
+            </div>
+          </div>
+          <div class="grid-3" style="margin-top:.85rem">
+            <div class="field"><label>Estado (UF)</label>
+              <select id="p-uf">
+                <option>MG</option>
+                <option>PA</option>
+                <option>GO</option>
+                <option>MT</option>
+                <option>RS</option>
+                <option>SC</option>
+                <option>SP</option>
+                <option>BA</option>
+                <option>RO</option>
+                <option>AM</option>
+                <option>RN</option>
+                <option>CE</option>
+                <option>Outro</option>
+              </select>
+            </div>
+            <div class="field"><label>Bacia Hidrográfica</label><input class="inp" type="text" id="p-bacia"
+                placeholder="Ex.: Rio das Velhas"></div>
+            <div class="field"><label>Tipologia do Minério</label>
+              <select id="p-tipo">
+                <option>Minério de Ferro</option>
+                <option>Ouro</option>
+                <option>Bauxita</option>
+                <option>Cobre</option>
+                <option>Níquel</option>
+                <option>Manganês</option>
+                <option>Zinco</option>
+                <option>Nióbio</option>
+                <option>Fosfato</option>
+                <option>Potássio</option>
+                <option>Calcário</option>
+                <option>Agregados</option>
+                <option>Outro</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🗺️</span> Contexto Hídrico e Regulatório</div>
+          <div class="grid-3">
+            <div class="field"><label>Condição Climática</label>
+              <select id="p-clima">
+                <option>Árido / Semiárido</option>
+                <option>Moderado com estação seca</option>
+                <option selected>Moderado</option>
+                <option>Alta precipitação</option>
+              </select>
+            </div>
+            <div class="field"><label>Estresse Hídrico (WRI Aqueduct)</label>
+              <select id="p-estresse">
+                <option value="nao">Não</option>
+                <option value="sim">Sim</option>
+                <option value="nd">Não avaliado</option>
+              </select>
+            </div>
+            <div class="field"><label>Método de Lavra</label>
+              <select id="p-lavra">
+                <option>Céu Aberto</option>
+                <option>Subterrânea</option>
+                <option>Mista</option>
+                <option>Aluvionar</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:.85rem">
+            <div class="field"><label>Corpo receptor (captação)</label><input class="inp" type="text" id="p-capt-rio"
+                placeholder="Nome do rio / aquífero"></div>
+            <div class="field"><label>Corpo receptor (lançamento) + Classe CONAMA</label><input class="inp" type="text"
+                id="p-lanc-rio" placeholder="Ex.: Rio Gualaxo — Classe 2"></div>
+          </div>
+          <div class="grid-2" style="margin-top:.85rem">
+            <div class="field"><label>Comitê de Bacia Hidrográfica (SINGREH)</label><input class="inp" type="text"
+                id="p-cbh" placeholder="Ex.: CBH Rio das Velhas"></div>
+            <div class="field"><label>Responsável pelo preenchimento</label><input class="inp" type="text" id="p-resp"
+                placeholder="Nome · Cargo · E-mail"></div>
+          </div>
+          <div class="info" style="margin-top:.75rem">💡 <strong>ICMM §2.2:</strong> Identifique todas as bacias onde
+            ocorrem captação ou descarga. Se a operação transfere água entre bacias distintas, registre cada bacia
+            separadamente.</div>
+        </div>
+      </div>
+
+      <!-- ── TAB 1: CAPTAÇÃO ───────────────────────────────── -->
+      <div class="panel" id="p1">
+        <div class="sec-hd">
+          <h2>Captação Operacional</h2><span class="sec-ref">ICMM Métrica 1 · GRI 303-3</span>
+        </div>
+        <div class="info">Volume anual destinado ao uso operacional. Classifique cada fonte por qualidade:
+          <strong>Alta</strong> (TDS &lt; 1.000 mg/L, pH 6,5–8,5) ou <strong>Baixa</strong> (requer tratamento antes de
+          uso sensível).</div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🌊</span> Água Superficial <span class="card-badge">ICMM §6</span>
+          </div>
+          <div class="qrow">
+            <div class="qrow-label">Rios, lagos, reservatórios <span class="qtag qtag-a">ALTA</span></div>
+            <div class="field"><label>Volume Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-sup-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Volume Baixa Qualidade <span class="qtag qtag-b">BAIXA</span></label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-sup-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field-hint" style="grid-column:1/-1">Ex.: captação via outorga em rio, barragem de
+              regularização.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">⛏️</span> Água Subterrânea (exceto dewatering)</div>
+          <div class="qrow">
+            <div class="qrow-label">Poços profundos, surgências, drenos <span class="qtag qtag-a">ALTA</span></div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-sub-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade <span class="qtag qtag-b">BAIXA</span></label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-sub-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field-hint" style="grid-column:1/-1">Rebaixamento de pit vai na aba OAG.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🌊</span> Água do Mar / Salobre</div>
+          <div class="qrow">
+            <div class="qrow-label">Oceano, estuários, dessalinização <span class="qtag qtag-a">ALTA</span></div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-mar-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade <span class="qtag qtag-b">BAIXA</span></label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-mar-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🚚</span> Água de Terceiros</div>
+          <div class="qrow">
+            <div class="qrow-label">Concessionárias, SABESP, pipa, consórcios <span class="qtag qtag-a">ALTA</span>
+            </div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-ter-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade <span class="qtag qtag-b">BAIXA</span></label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-ter-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">💎</span> Umidade no Minério (ROM) <span class="card-badge">GT10
+              inovação</span></div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Volume estimado (ML/ano)</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="c-rom" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+              <div class="field-hint">Umidade natural do minério extraído (ROM). Entrada adicional ao balanço conforme
+                GT10/IBRAM.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB 2: OAG ────────────────────────────────────── -->
+      <div class="panel" id="p2">
+        <div class="sec-hd">
+          <h2>OAG — Outra Água Gerenciada</h2><span class="sec-ref">ICMM Métrica 2</span>
+        </div>
+        <div class="warn">⚠ <strong>OAG ≠ Captação Operacional.</strong> OAG é água gerenciada ativamente que não é
+          destinada ao uso do processo: dewatering, desvios, controle de cheias. Reportada separadamente da captação
+          operacional no ICMM/GRI.</div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🔧</span> Rebaixamento / Dewatering (Depressão de Pit)</div>
+          <div class="qrow">
+            <div class="qrow-label">Bombeamento para rebaixar lençol freático <span class="qtag qtag-b">geralmente
+                BAIXA</span></div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="oag-dew-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade <span class="qtag qtag-b">BAIXA</span></label>
+              <div class="inp-wrap"><input class="inp" type="number" id="oag-dew-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field-hint" style="grid-column:1/-1">Água de contato com minério, tipicamente com metais e
+              sólidos em suspensão.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🌊</span> Desvio de Cursos d'Água / Controle de Cheias</div>
+          <div class="qrow">
+            <div class="qrow-label">Água desviada para permitir lavra ou controlar inundação</div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="oag-div-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="oag-div-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB 3: PRECIPITAÇÃO ───────────────────────────── -->
+      <div class="panel" id="p3">
+        <div class="sec-hd">
+          <h2>Precipitação e Escoamento</h2><span class="sec-ref">ICMM §8.3</span>
+        </div>
+        <div class="info">Chuva captada dentro do limite do sítio. <strong>Não</strong> é "captação operacional" no
+          reporte ICMM/GRI, mas entra na equação do balanço.</div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🌧️</span> Precipitação Direta e Escoamento Interno</div>
+          <div class="qrow">
+            <div class="qrow-label">Chuva limpa e runoff interno</div>
+            <div class="field"><label>Alta Qualidade — chuva limpa</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="prec-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade — escoamento de contato</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="prec-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>Fonte dos dados de precipitação</label>
+              <select id="prec-fonte">
+                <option>Pluviógrafo automático no sítio</option>
+                <option>Estação meteorológica próxima</option>
+                <option>Dados INMET / ANA</option>
+                <option>Modelo hidrológico</option>
+                <option>Estimativa de engenharia</option>
+              </select>
+            </div>
+            <div class="field"><label>Precipitação média do sítio</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="prec-mm" value="0" min="0"><span
+                  class="unit">mm/ano</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB 4: DESCARGA ───────────────────────────────── -->
+      <div class="panel" id="p4">
+        <div class="sec-hd">
+          <h2>Descarga Total</h2><span class="sec-ref">ICMM Métrica 3 · GRI 303-4</span>
+        </div>
+        <div class="info">Todo volume lançado para fora do limite do sítio: efluentes tratados, OAG devolvida, drenagem
+          com destino externo.</div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🏞️</span> Descarga para Corpos d'Água Superficiais</div>
+          <div class="qrow">
+            <div class="qrow-label">Rios, lagos, córregos</div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="d-sup-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="d-sup-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div style="grid-column:1/-1">
+              <div class="field"><label>Corpo receptor</label><input class="inp" type="text" id="d-sup-nome"
+                  placeholder="Ex.: Rio Gualaxo do Norte" style="margin-top:.2rem"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🌍</span> Descarga Subterrânea (recharge / MAR)</div>
+          <div class="qrow">
+            <div class="qrow-label">Aquífero, drenos, MAR</div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="d-sub-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="d-sub-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">🚰</span> Disponibilização a Terceiros</div>
+          <div class="qrow">
+            <div class="qrow-label">Comunidades, outras operações, saneamento</div>
+            <div class="field"><label>Alta Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="d-ter-a" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Baixa Qualidade</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="d-ter-b" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB 5: CONSUMO & RECICLO ──────────────────────── -->
+      <div class="panel" id="p5">
+        <div class="sec-hd">
+          <h2>Consumo & Reciclo</h2><span class="sec-ref">ICMM Métricas 4 & 5 · GRI 303-5</span>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">📊</span> Variação de Estoque (ΔS) & Consumo Derivado</div>
+          <div class="grid-2">
+            <div class="field">
+              <label>ΔS medido — positivo = aumento de estoque</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="ds" value="0"><span class="unit">ML/ano</span>
+              </div>
+              <div class="field-hint">Variação do nível de reservatórios, TSF e piscinas entre início e fim do período.
+              </div>
+            </div>
+            <div class="field">
+              <label>Consumo Derivado (calculado automaticamente)</label>
+              <div class="inp-wrap"><input class="inp derived" type="number" id="cons-calc" readonly><span
+                  class="unit">ML/ano</span></div>
+              <div class="field-hint">= Cap.Op. + OAG + Precip. + ROM − Descarga − ΔS</div>
+            </div>
+          </div>
+          <div class="eq-block" id="eq-live">
+            Consumo <span class="op">=</span> Cap.<span id="eq-c">0</span> <span class="op">+</span> OAG.<span
+              id="eq-o">0</span> <span class="op">+</span> Prec.<span id="eq-p">0</span> <span class="op">+</span>
+            ROM.<span id="eq-r">0</span> <span class="op">−</span> Desc.<span id="eq-d">0</span> <span
+              class="op">−</span> ΔS.<span id="eq-s">0</span> <span class="op">=</span> <span class="highlight"
+              id="eq-res">0,0 ML/ano</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">♻️</span> Reciclo / Reúso Interno <span class="card-badge">ICMM
+              Métrica 5</span></div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Volume reciclado internamente</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="rec" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+              <div class="field-hint">Retorno da TSF ao processo, piscinas de recirculação. Não conta como captação nem
+                descarga.</div>
+            </div>
+            <div class="field">
+              <label>Taxa de Reciclo (calculada)</label>
+              <div class="inp-wrap"><input class="inp derived" type="number" id="taxa-calc" readonly><span
+                  class="unit">%</span></div>
+              <div class="field-hint">= Reciclo / (Reciclo + Captação Op.) × 100</div>
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top:.75rem">
+            <div class="field"><label>Tecnologia de eficiência 1</label>
+              <select id="tec1">
+                <option value="">— nenhuma —</option>
+                <option>Espessamento de rejeitos</option>
+                <option>Filtragem de rejeitos</option>
+                <option>Reaproveitamento de efluentes industriais</option>
+                <option>Dessalinização</option>
+                <option>Recirculação de água de processo</option>
+                <option>Captação pluvial estruturada</option>
+              </select>
+            </div>
+            <div class="field"><label>Tecnologia de eficiência 2</label>
+              <select id="tec2">
+                <option value="">— nenhuma —</option>
+                <option>Espessamento de rejeitos</option>
+                <option>Filtragem de rejeitos</option>
+                <option>Reaproveitamento de efluentes industriais</option>
+                <option>Dessalinização</option>
+                <option>Recirculação de água de processo</option>
+                <option>Captação pluvial estruturada</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="ico">💨</span> Componentes de Consumo (opcional — conferência)</div>
+          <div class="grid-3">
+            <div class="field"><label>Evaporação da TSF</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="con-ev" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Umidade no produto final</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="con-prod" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+            <div class="field"><label>Umidade no rejeito/estéril</label>
+              <div class="inp-wrap"><input class="inp" type="number" id="con-rej" value="0" min="0"><span
+                  class="unit">ML/ano</span></div>
+            </div>
+          </div>
+          <div class="field-hint" style="margin-top:.5rem">A soma dos componentes deve ser próxima ao consumo derivado.
+            Use para conferência e auditoria interna.</div>
+        </div>
+      </div>
+
+      <!-- ── TAB 6: DIAGRAMA ───────────────────────────────── -->
+      <div class="panel" id="p6">
+        <div class="sec-hd">
+          <h2>Diagrama de Fluxo Hídrico</h2><span class="sec-ref">Visualização Interativa</span>
+        </div>
+        <div class="card">
+          <div class="diagram-shell">
+            <canvas id="dcanvas" height="480"></canvas>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-blue" id="btn-refresh-diagram">↺ Atualizar</button>
+            <button class="btn btn-ghost" id="btn-dl-diagram">⬇ Baixar PNG</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB 7: RELATÓRIO & IA ────────────────────────── -->
+      <div class="panel" id="p7">
+        <div class="sec-hd">
+          <h2>Relatório Consolidado</h2><span class="sec-ref">ICMM Tabela 4 · GRI 303</span>
+        </div>
+        <div id="rpt-body">
+          <div class="info">Clique em <strong>"Relatório"</strong> no cabeçalho ou navegue até esta aba para gerar o
+            relatório completo.</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
