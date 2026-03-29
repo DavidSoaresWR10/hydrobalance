@@ -64,7 +64,7 @@ app.post('/api/operacoes', async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING *`,
       [usuario_id, nome, empresa, ano, uf, bacia, tipo_minerio, clima,
-       estresse_hidrico, metodo_lavra, corpo_captacao, corpo_lancamento, cbh, responsavel]
+        estresse_hidrico, metodo_lavra, corpo_captacao, corpo_lancamento, cbh, responsavel]
     );
 
     await pool.query('INSERT INTO balanco (operacao_id) VALUES ($1)', [result.rows[0].id]);
@@ -89,7 +89,7 @@ app.put('/api/operacoes/:id', async (req, res) => {
        corpo_lancamento=$11, cbh=$12, responsavel=$13, atualizado_em=CURRENT_TIMESTAMP
        WHERE id=$14 RETURNING *`,
       [nome, empresa, ano, uf, bacia, tipo_minerio, clima, estresse_hidrico,
-       metodo_lavra, corpo_captacao, corpo_lancamento, cbh, responsavel, req.params.id]
+        metodo_lavra, corpo_captacao, corpo_lancamento, cbh, responsavel, req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Não encontrada' });
     res.json(result.rows[0]);
@@ -114,12 +114,12 @@ app.delete('/api/operacoes/:id', async (req, res) => {
 
 app.put('/api/balanco/:operacao_id', async (req, res) => {
   const fields = [
-    'c_sup_a','c_sup_b','c_sub_a','c_sub_b','c_mar_a','c_mar_b',
-    'c_ter_a','c_ter_b','c_rom',
-    'oag_dew_a','oag_dew_b','oag_div_a','oag_div_b',
-    'prec_a','prec_b','prec_fonte','prec_mm',
-    'd_sup_a','d_sup_b','d_sub_a','d_sub_b','d_ter_a','d_ter_b','d_sup_nome',
-    'ds','rec','con_ev','con_prod','con_rej','tec1','tec2'
+    'c_sup_a', 'c_sup_b', 'c_sub_a', 'c_sub_b', 'c_mar_a', 'c_mar_b',
+    'c_ter_a', 'c_ter_b', 'c_rom',
+    'oag_dew_a', 'oag_dew_b', 'oag_div_a', 'oag_div_b',
+    'prec_a', 'prec_b', 'prec_fonte', 'prec_mm',
+    'd_sup_a', 'd_sup_b', 'd_sub_a', 'd_sub_b', 'd_ter_a', 'd_ter_b', 'd_sup_nome',
+    'ds', 'rec', 'con_ev', 'con_prod', 'con_rej', 'tec1', 'tec2'
   ];
 
   const setClauses = fields.map((f, i) => `${f} = $${i + 1}`).join(', ');
@@ -166,6 +166,23 @@ app.post('/api/ai', async (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ══════════════════════════════════════════════════════
+// SERVIR FRONTEND EM PRODUÇÃO
+// ══════════════════════════════════════════════════════
+const path = require('path');
+const distPath = path.join(__dirname, '..', 'dist');
+
+// Servir arquivos estáticos do build do Vite
+app.use(express.static(distPath));
+
+// Qualquer rota que não seja /api → index.html (SPA fallback)
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(distPath, 'index.html'));
   }
 });
 
